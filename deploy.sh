@@ -8,6 +8,9 @@ PROJECT_DIR="${PROJECT_DIR:-$SCRIPT_DIR}"
 DOMAIN="onemarket.xin"
 REPO_URL=""  # 填入你的 Git 仓库地址
 
+# 无域名、仅用 IP:端口（如 http://公网IP:9000）时保持为 1；已取消 compose 中 nginx/certbot 注释并要申请证书时改为 0。
+SKIP_SSL="${SKIP_SSL:-1}"
+
 echo "=============================="
 echo "  Design Compare 部署脚本"
 echo "  域名: $DOMAIN"
@@ -75,6 +78,12 @@ EOF
 setup_ssl() {
     echo "[4/6] 配置 SSL 证书..."
     require_compose_file
+
+    if [ "$SKIP_SSL" = "1" ] || [ "$SKIP_SSL" = "true" ]; then
+        echo "  已跳过（SKIP_SSL=1，无域名阶段用 http://<服务器IP>:9000；需要 HTTPS 时取消 compose 中 nginx/certbot 并设 SKIP_SSL=0）"
+        return 0
+    fi
+
     mkdir -p nginx/conf.d nginx/ssl nginx/certbot/www
 
     if [ ! -d "nginx/ssl/live/$DOMAIN" ]; then
@@ -149,14 +158,20 @@ verify() {
     echo ""
     echo "=============================="
     echo "  部署完成！"
-    echo "  https://$DOMAIN"
+    if [ "$SKIP_SSL" = "1" ] || [ "$SKIP_SSL" = "true" ]; then
+        echo "  访问: http://<本机公网IP>:9000（安全组放行 9000）"
+    else
+        echo "  https://$DOMAIN"
+    fi
     echo "=============================="
     echo ""
     echo "常用命令："
     echo "  查看日志:    docker compose logs -f"
     echo "  重启服务:    docker compose restart"
     echo "  更新部署:    git pull && docker compose up -d --build"
-    echo "  续期证书:    docker compose run --rm certbot renew"
+    if [ "$SKIP_SSL" != "1" ] && [ "$SKIP_SSL" != "true" ]; then
+        echo "  续期证书:    docker compose run --rm certbot renew"
+    fi
 }
 
 # ---- 执行 ----

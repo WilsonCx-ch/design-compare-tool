@@ -19,29 +19,31 @@ services:
     networks:
       - webnet
 
-  nginx:
-    image: nginx:alpine
-    container_name: design-compare-nginx
-    restart: unless-stopped
-    ports:
-      - '80:80'
-      - '443:443'
-    volumes:
-      - ./nginx/conf.d:/etc/nginx/conf.d:ro
-      - ./nginx/ssl:/etc/nginx/ssl:ro
-      - ./nginx/certbot/www:/var/www/certbot:ro
-    depends_on:
-      - app
-    networks:
-      - webnet
+  # 无域名阶段：仅用 IP 访问，直接打开 http://<公网IP>:9000（安全组放行 9000）。
+  # 有域名并需 80/443 + HTTPS 时，取消下面 nginx、certbot 整段注释即可（并配置 nginx/conf.d 与证书）。
+  # nginx:
+  #   image: nginx:alpine
+  #   container_name: design-compare-nginx
+  #   restart: unless-stopped
+  #   ports:
+  #     - '80:80'
+  #     - '443:443'
+  #   volumes:
+  #     - ./nginx/conf.d:/etc/nginx/conf.d:ro
+  #     - ./nginx/ssl:/etc/nginx/ssl:ro
+  #     - ./nginx/certbot/www:/var/www/certbot:ro
+  #   depends_on:
+  #     - app
+  #   networks:
+  #     - webnet
 
-  certbot:
-    image: certbot/certbot
-    container_name: design-compare-certbot
-    volumes:
-      - ./nginx/ssl:/etc/letsencrypt
-      - ./nginx/certbot/www:/var/www/certbot
-    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
+  # certbot:
+  #   image: certbot/certbot
+  #   container_name: design-compare-certbot
+  #   volumes:
+  #     - ./nginx/ssl:/etc/letsencrypt
+  #     - ./nginx/certbot/www:/var/www/certbot
+  #   entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
 
 networks:
   webnet:
