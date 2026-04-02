@@ -4,6 +4,9 @@ services:
       context: .
       dockerfile: Dockerfile
       args:
+        # 默认仍拉 Docker Hub 的 node:20-alpine；本机已配阿里云「镜像加速器」时无需改此项。
+        # 仅当使用自有 ACR 同步地址时改为: registry.cn-<地域>.aliyuncs.com/<命名空间>/node:20-alpine
+        BASE_IMAGE: node:20-alpine
         # 国内构建加速；海外可改为 https://registry.npmjs.org
         NPM_REGISTRY: https://registry.npmmirror.com
     container_name: design-compare
@@ -11,7 +14,8 @@ services:
     ports:
       - '9000:9000'
     env_file:
-      - .env.production
+      - path: .env.production
+        required: false
     networks:
       - webnet
 

@@ -1,4 +1,13 @@
-FROM node:20-alpine AS base
+# 基础镜像：默认 node:20-alpine（来自 Docker Hub）。
+#
+# 「阿里云源」的推荐做法：在 Docker Desktop → Settings → Docker Engine 里配置 registry-mirrors，
+# 使用控制台「容器镜像服务 → 镜像工具 → 镜像加速器」里给你的专属地址；构建时仍写 node:20-alpine，
+# 由守护进程走加速器拉取，无需改 BASE_IMAGE。（见阿里云文档：配置官方镜像加速器）
+#
+# 若必须写死仓库地址（例如已在 ACR「制品订阅」同步了 library/node），再设置：
+#   docker compose build --build-arg BASE_IMAGE=registry.cn-<地域>.aliyuncs.com/<命名空间>/node:20-alpine
+ARG BASE_IMAGE=node:20-alpine
+FROM ${BASE_IMAGE} AS base
 
 # 国内构建时 npm 默认源很慢，易表现为 RUN npm ci 长时间无输出（非死锁）。
 # 海外构建可改为: docker build --build-arg NPM_REGISTRY=https://registry.npmjs.org .
