@@ -3,10 +3,13 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        # 国内构建加速；海外可改为 https://registry.npmjs.org
+        NPM_REGISTRY: https://registry.npmmirror.com
     container_name: design-compare
     restart: unless-stopped
     ports:
-      - "9000:9000"
+      - '9000:9000'
     env_file:
       - .env.production
     networks:
@@ -17,8 +20,8 @@ services:
     container_name: design-compare-nginx
     restart: unless-stopped
     ports:
-      - "80:80"
-      - "443:443"
+      - '80:80'
+      - '443:443'
     volumes:
       - ./nginx/conf.d:/etc/nginx/conf.d:ro
       - ./nginx/ssl:/etc/nginx/ssl:ro
