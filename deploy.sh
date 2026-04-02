@@ -60,7 +60,7 @@ EOF
 # ---- 4. SSL 证书 ----
 setup_ssl() {
     echo "[4/6] 配置 SSL 证书..."
-    mkdir -p nginx/ssl nginx/certbot/www
+    mkdir -p nginx/conf.d nginx/ssl nginx/certbot/www
 
     if [ ! -d "nginx/ssl/live/$DOMAIN" ]; then
         echo "  首次申请证书，先用 HTTP 模式启动 Nginx..."
@@ -81,7 +81,9 @@ server {
     }
 }
 TMPEOF
-        cp nginx/conf.d/default.conf nginx/conf.d/default.conf.bak
+        if [ -f nginx/conf.d/default.conf ]; then
+            cp nginx/conf.d/default.conf nginx/conf.d/default.conf.bak
+        fi
         mv nginx/conf.d/default.conf.tmp nginx/conf.d/default.conf
 
         docker compose up -d nginx
@@ -96,8 +98,12 @@ TMPEOF
             --agree-tos \
             --no-eff-email
 
-        # 恢复完整 nginx 配置
-        mv nginx/conf.d/default.conf.bak nginx/conf.d/default.conf
+        # 恢复完整 nginx 配置（有备份时才恢复）
+        if [ -f nginx/conf.d/default.conf.bak ]; then
+            mv nginx/conf.d/default.conf.bak nginx/conf.d/default.conf
+        else
+            echo "  ⚠ 未找到 default.conf 备份，请从仓库复制 nginx/conf.d/default.conf 后再启动"
+        fi
         docker compose down
         echo "  ✓ SSL 证书申请成功"
     else
