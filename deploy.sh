@@ -1,14 +1,28 @@
 #!/bin/bash
 set -e
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# 默认使用脚本所在目录（即仓库根目录）。若代码在 /opt/design-compare，可: PROJECT_DIR=/opt/design-compare ./deploy.sh
+PROJECT_DIR="${PROJECT_DIR:-$SCRIPT_DIR}"
+
 DOMAIN="onemarket.xin"
-PROJECT_DIR="/opt/design-compare"
 REPO_URL=""  # 填入你的 Git 仓库地址
 
 echo "=============================="
 echo "  Design Compare 部署脚本"
 echo "  域名: $DOMAIN"
+echo "  项目目录: $PROJECT_DIR"
 echo "=============================="
+
+require_compose_file() {
+    if [ ! -f "$PROJECT_DIR/docker-compose.yml" ]; then
+        echo ""
+        echo "错误: 在 $PROJECT_DIR 下找不到 docker-compose.yml。"
+        echo "  - 请在仓库根目录执行本脚本，或设置: export PROJECT_DIR=/你的/项目路径"
+        echo "  - 若使用 /opt/design-compare，请先把完整项目（含 docker-compose.yml）拷到该目录或 git clone。"
+        exit 1
+    fi
+}
 
 # ---- 1. 系统依赖 ----
 install_deps() {
@@ -18,7 +32,7 @@ install_deps() {
         systemctl enable docker
         systemctl start docker
     fi
-    if ! command -v docker compose &> /dev/null && ! docker compose version &> /dev/null; then
+    if ! docker compose version &> /dev/null; then
         apt-get update && apt-get install -y docker-compose-plugin
     fi
     echo "  ✓ Docker $(docker --version | awk '{print $3}')"
@@ -30,15 +44,15 @@ setup_project() {
     mkdir -p "$PROJECT_DIR"
     if [ -n "$REPO_URL" ]; then
         if [ -d "$PROJECT_DIR/.git" ]; then
-            cd "$PROJECT_DIR" && git pull
+            (cd "$PROJECT_DIR" && git pull)
         else
             git clone "$REPO_URL" "$PROJECT_DIR"
         fi
     else
-        echo "  ⚠ 未设置 REPO_URL，请手动上传代码到 $PROJECT_DIR"
-        echo "  可用: scp -r ./* root@<服务器IP>:$PROJECT_DIR/"
+        echo "  ⚠ 未设置 REPO_URL 时，请确保 $PROJECT_DIR 已是完整仓库（含 docker-compose.yml）"
     fi
     cd "$PROJECT_DIR"
+    require_compose_file
 }
 
 # ---- 3. 环境变量 ----
@@ -60,6 +74,7 @@ EOF
 # ---- 4. SSL 证书 ----
 setup_ssl() {
     echo "[4/6] 配置 SSL 证书..."
+    require_compose_file
     mkdir -p nginx/conf.d nginx/ssl nginx/certbot/www
 
     if [ ! -d "nginx/ssl/live/$DOMAIN" ]; then
@@ -114,6 +129,7 @@ TMPEOF
 # ---- 5. 构建并启动 ----
 build_and_start() {
     echo "[5/6] 构建 Docker 镜像并启动服务..."
+    require_compose_file
     docker compose build --no-cache app
     docker compose up -d
     echo "  ✓ 服务已启动"
