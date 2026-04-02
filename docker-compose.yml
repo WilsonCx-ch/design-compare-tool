@@ -1,0 +1,41 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: design-compare
+    restart: unless-stopped
+    ports:
+      - "9000:9000"
+    env_file:
+      - .env.production
+    networks:
+      - webnet
+
+  nginx:
+    image: nginx:alpine
+    container_name: design-compare-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+      - ./nginx/certbot/www:/var/www/certbot:ro
+    depends_on:
+      - app
+    networks:
+      - webnet
+
+  certbot:
+    image: certbot/certbot
+    container_name: design-compare-certbot
+    volumes:
+      - ./nginx/ssl:/etc/letsencrypt
+      - ./nginx/certbot/www:/var/www/certbot
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
+
+networks:
+  webnet:
+    driver: bridge

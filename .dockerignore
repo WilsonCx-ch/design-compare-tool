@@ -1,0 +1,17 @@
+node_modules
+.next
+.git
+.gitignore
+*.md
+dist
+release
+.env
+.env*.local
+.cursor
+.claude
+clawScript
+electron
+coverage
+.nyc_output
+.DS_Store
+Thumbs.db

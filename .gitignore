@@ -1,0 +1,52 @@
+# Dependencies
+node_modules/
+
+# Next.js
+.next/
+out/
+
+# Production / pack
+dist/
+release/
+
+# Env & secrets
+.env
+.env.*.local
+.env.local
+.env.production
+
+# Nginx SSL & certbot state
+nginx/ssl/
+nginx/certbot/
+
+# Debug & logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+*.log
+
+# TypeScript
+*.tsbuildinfo
+
+# Testing & coverage
+coverage/
+.nyc_output/
+
+# Vercel
+.vercel
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE (optional — uncomment if you do not commit editor config)
+# .idea/
+# *.swp
+# *.swo
+
+# Local tool / agent state (uncomment if you prefer not to track)
+.cursor/
+.claude/
+clawScript/
+electron/
