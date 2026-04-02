@@ -6,10 +6,7 @@
     "dev": "next dev --turbopack -p 9000",
     "build": "next build",
     "start": "next start -p 9000",
-    "lint": "next lint",
-    "electron:dev": "concurrently \"npm run dev\" \"wait-on http://localhost:9000 && cross-env ELECTRON_DEV=true electron electron/main.js\"",
-    "electron:build": "npm run build && electron-builder",
-    "prepare:standalone": "npm run build && cp -r .next/standalone ./dist && cp -r .next/static ./dist/.next/static && cp -r public ./dist/public"
+    "lint": "next lint"
   },
   "dependencies": {
     "class-variance-authority": "^0.7.0",
@@ -36,47 +33,10 @@
     "@types/pngjs": "^6.0.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
-    "concurrently": "^9.0.0",
-    "cross-env": "^7.0.0",
-    "electron": "^33.0.0",
-    "electron-builder": "^25.0.0",
     "eslint": "^9.0.0",
     "eslint-config-next": "^15.1.0",
     "postcss": "^8.4.0",
     "tailwindcss": "^4.0.0",
-    "typescript": "^5.7.0",
-    "wait-on": "^8.0.0"
-  },
-  "main": "electron/main.js",
-  "build": {
-    "appId": "com.design-compare.app",
-    "productName": "Design Compare",
-    "directories": {
-      "output": "release"
-    },
-    "files": [
-      "electron/**/*"
-    ],
-    "extraResources": [
-      {
-        "from": ".next/standalone",
-        "to": "standalone"
-      },
-      {
-        "from": ".next/static",
-        "to": "standalone/.next/static"
-      },
-      {
-        "from": "public",
-        "to": "standalone/public"
-      }
-    ],
-    "mac": {
-      "target": "dmg",
-      "icon": null
-    },
-    "win": {
-      "target": "nsis"
-    }
+    "typescript": "^5.7.0"
   }
 }

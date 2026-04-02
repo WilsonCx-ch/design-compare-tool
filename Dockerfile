@@ -12,9 +12,12 @@ FROM ${BASE_IMAGE} AS base
 # 国内构建时 npm 默认源很慢，易表现为 RUN npm ci 长时间无输出（非死锁）。
 # 海外构建可改为: docker build --build-arg NPM_REGISTRY=https://registry.npmjs.org .
 ARG NPM_REGISTRY=https://registry.npmmirror.com
+# sharp 的 libvips 预编译包默认从 GitHub 下载，国内走 npmmirror 镜像
 ENV NPM_CONFIG_REGISTRY=${NPM_REGISTRY} \
     NPM_CONFIG_FETCH_TIMEOUT=600000 \
-    NPM_CONFIG_FETCH_RETRIES=8
+    NPM_CONFIG_FETCH_RETRIES=8 \
+    npm_config_sharp_binary_host=https://npmmirror.com/mirrors/sharp \
+    npm_config_sharp_libvips_binary_host=https://npmmirror.com/mirrors/sharp-libvips
 
 # ---- Dependencies ----
 FROM base AS deps
